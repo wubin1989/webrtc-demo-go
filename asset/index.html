@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title></title>
+	<link rel="stylesheet" href="">
+</head>
+<body>
+
+	<div id="remotes"></div>
+	<label>Your ID: </label><br />
+	<textarea id="yourId"></textarea><br />
+	<label>Other ID: </label>
+	<textarea id="otherId"></textarea><br />
+	<button id="connect">connect</button><br />
+
+	<label>Enter Message: </label><br />
+	<textarea id="yourMessage"></textarea>
+	<button id="send">send</button>
+	<pre id="messages"></pre>
+
+	<div class="videoContainer">
+	    <video id="localVideo" style="height: 150px;" oncontextmenu="return false;"></video>
+	    <div id="localVolume" class="volume_bar"></div>
+	</div>
+
+	
+	<script src="/socket.io-1.3.7.js"></script>
+	<script src="/simplewebrtc.bundle.js"></script>
+	<script src="/index.js" type="text/javascript" charset="utf-8" async defer></script>
+</body>
+</html>
