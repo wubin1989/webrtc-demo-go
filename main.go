@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/googollee/go-socket.io"
 	"github.com/satori/go.uuid"
+	"go-signal-server/component"
 	"log"
 	"net/http"
 )
@@ -11,10 +12,6 @@ import (
 type ExtendedServer struct {
 	server *socketio.Server
 	result
-}
-
-type result struct {
-	clients *map[string]struct{}
 }
 
 type handshakeDetail struct {
@@ -37,17 +34,26 @@ type candidate struct {
 }
 
 func main() {
-
 	eServer := &ExtendedServer{}
 	server, err := socketio.NewServer(nil)
 	eServer.server = server
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	defaultAdaptor := make(socketio.Broadcast)
+
+	roomCtrl := RoomControl.NewRoomControl(defaultAdaptor)
+	server.SetAdaptor(roomCtrl)
+
+	log.Printf("roomCtrl is %+v", roomCtrl)
+
 	server.On("connection", func(so socketio.Socket) {
 		log.Println("on connection")
-		log.Printf("%+v", *server)
-		so.Join("chat")
+
+		so = so.SetResources(false, true, false)
+
+		log.Printf("%+v", so)
 
 		so.On("message", func(msg []byte) {
 
@@ -90,7 +96,7 @@ func main() {
 			log.Println("on disconnect")
 		})
 
-		so.On("create", func(name string, cb interface{}) {
+		so.On("create", func(name string) {
 			log.Printf("socket name is %s", name)
 
 			// if (arguments.length == 2) {
@@ -103,6 +109,10 @@ func main() {
 			log.Println(server)
 			log.Printf("uuid is %s", uuid.NewV4())
 
+			so.Emit("room factory message back", name)
+
+			roomCtrl.Join(name, so)
+
 			// check if exists
 			// var room = io.nsps['/'].adapter.rooms[name];
 			// if (room && room.length) {
@@ -111,6 +121,14 @@ func main() {
 			//     join(name);
 			//     safeCb(cb)(null, name);
 			// }
+		})
+
+		so.On("join", func(name string) {
+
+			joinFeedBack := roomCtrl.DescribeRoom(name)
+			so.Emit("join feed back", joinFeedBack)
+			roomCtrl.Join(name, so)
+
 		})
 
 	})
@@ -123,25 +141,6 @@ func main() {
 	log.Println("Serving at localhost:8888...")
 	log.Fatal(http.ListenAndServe(":8888", nil))
 }
-
-// func (self *ExtendedServer) DescribeRoom(name string) result {
-// 	log.Println(self.server)
-//         // var adapter = io.nsps['/'].adapter;
-//         // var clients = {};
-//         // if (adapter.rooms[name]) {
-//         //     clients = adapter.rooms[name]['sockets'];
-//         // }
-//         // var result = {
-//         //     clients: {}
-//         // };
-//         // // console.log(clients);
-//         // // console.log(adapter);
-//         // // console.log(adapter.nsp);
-//         // Object.keys(clients).forEach(function(id) {
-//         //     result.clients[id] = adapter.nsp.connected[id].resources;
-//         // });
-//         return result;
-//     }
 
 // function clientsInRoom(name) {
 //     return io.sockets.clients(name).length;

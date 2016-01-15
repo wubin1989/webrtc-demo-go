@@ -102,15 +102,8 @@
             var val = 'chat';
             webrtc.createRoom(val, function (err, name) {
                 console.log(' create room cb', arguments);
-            
-                var newUrl = location.pathname + '?' + name;
-                if (!err) {
-                    history.replaceState({foo: 'bar'}, null, newUrl);
-                    //setRoom(name);
-                } else {
-                    console.log(err);
-                }
             });
+
             //return false;          
         //});
     }

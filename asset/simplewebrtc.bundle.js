@@ -124,6 +124,20 @@ function SimpleWebRTC(opts) {
         }
     });
 
+    connection.on('room factory message back', function (name) {
+        if (name) {
+            var newUrl = location.pathname + '?' + name;
+            history.replaceState({foo: 'bar'}, null, newUrl);
+            //setRoom(name);
+        } else {
+            console.log('no name passed back from server');
+        }
+    });
+
+
+
+
+
     // instantiate our main WebRTC helper
     // using same logger from logic here
     opts.logger = this.logger;
@@ -330,37 +344,38 @@ SimpleWebRTC.prototype.joinRoom = function (name, cb) {
     this.roomName = name;
     this.connection.emit('join', name, function (err, roomDescription) {
         console.log('join CB', err, roomDescription);
-        if (err) {
-            self.emit('error', err);
-        } else {
-            var id,
-                client,
-                type,
-                peer;
-            for (id in roomDescription.clients) {
-                client = roomDescription.clients[id];
-                for (type in client) {
-                    if (client[type]) {
-                        peer = self.webrtc.createPeer({
-                            id: id,
-                            type: type,
-                            enableDataChannels: self.config.enableDataChannels && type !== 'screen',
-                            receiveMedia: {
-                                offerToReceiveAudio: type !== 'screen' && self.config.receiveMedia.offerToReceiveAudio ? 1 : 0,
-                                offerToReceiveVideo: self.config.receiveMedia.offerToReceiveVideo
-                            }
-                        });
-                        self.emit('createdPeer', peer);
-                        peer.start();
-                    }
+    });
+
+    this.connection.on('join feed back', function (roomDescription) {
+        console.log(roomDescription);
+        var id,
+            client,
+            type,
+            peer;
+        for (id in roomDescription.clients) {
+            client = roomDescription.clients[id];
+            for (type in client) {
+                if (client[type]) {
+                    peer = self.webrtc.createPeer({
+                        id: id,
+                        type: type,
+                        enableDataChannels: self.config.enableDataChannels && type !== 'screen',
+                        receiveMedia: {
+                            offerToReceiveAudio: type !== 'screen' && self.config.receiveMedia.offerToReceiveAudio ? 1 : 0,
+                            offerToReceiveVideo: self.config.receiveMedia.offerToReceiveVideo
+                        }
+                    });
+                    self.emit('createdPeer', peer);
+                    peer.start();
                 }
             }
         }
-
         if (cb) cb(err, roomDescription);
         self.emit('joinedRoom', name);
     });
 };
+
+
 
 SimpleWebRTC.prototype.getEl = function (idOrEl) {
     if (typeof idOrEl === 'string') {

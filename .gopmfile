@@ -1,0 +1,4 @@
+[deps]
+github.com/googollee/go-socket.io = 
+github.com/satori/go.uuid = 
+
