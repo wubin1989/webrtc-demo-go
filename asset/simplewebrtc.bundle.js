@@ -165,6 +165,8 @@ function SimpleWebRTC(opts) {
     });
 
     this.webrtc.on('message', function (payload) {
+        console.log('hello !!!!!');
+        console.log(JSON.stringify(payload));
         self.connection.emit('message', payload);
     });
 
@@ -342,35 +344,38 @@ SimpleWebRTC.prototype.setVolumeForAll = function (volume) {
 SimpleWebRTC.prototype.joinRoom = function (name, cb) {
     var self = this;
     this.roomName = name;
-    this.connection.emit('join', name, function (err, roomDescription) {
-        console.log('join CB', err, roomDescription);
-    });
+    this.connection.emit('join', name);
 
     this.connection.on('join feed back', function (roomDescription) {
-        console.log(roomDescription);
+        var parsedRoomDesp = JSON.parse(roomDescription)
+        console.log(parsedRoomDesp);
+
         var id,
             client,
             type,
             peer;
-        for (id in roomDescription.clients) {
-            client = roomDescription.clients[id];
+        for (id in parsedRoomDesp.Clients) {
+            client = parsedRoomDesp.Clients[id];
             for (type in client) {
+                console.log(type);
                 if (client[type]) {
+                    console.log(client[type]);
                     peer = self.webrtc.createPeer({
                         id: id,
-                        type: type,
+                        type: type.toLowerCase(),
                         enableDataChannels: self.config.enableDataChannels && type !== 'screen',
                         receiveMedia: {
                             offerToReceiveAudio: type !== 'screen' && self.config.receiveMedia.offerToReceiveAudio ? 1 : 0,
                             offerToReceiveVideo: self.config.receiveMedia.offerToReceiveVideo
                         }
                     });
+                    console.log(peer);
                     self.emit('createdPeer', peer);
                     peer.start();
                 }
             }
         }
-        if (cb) cb(err, roomDescription);
+        if (cb) cb(err, parsedRoomDesp);
         self.emit('joinedRoom', name);
     });
 };
@@ -808,6 +813,7 @@ function WebRTC(opts) {
 util.inherits(WebRTC, localMedia);
 
 WebRTC.prototype.createPeer = function (opts) {
+    console.log(opts);
     var peer;
     opts.parent = this;
     peer = new Peer(opts);
@@ -2212,6 +2218,9 @@ Peer.prototype.handleMessage = function (message) {
 
 // send via signalling channel
 Peer.prototype.send = function (messageType, payload) {
+    console.log('worldASDFSADFSADFASFSDAF');
+    console.log(messageType);
+    console.log(payload);
     var message = {
         to: this.id,
         sid: this.sid,
@@ -2222,6 +2231,8 @@ Peer.prototype.send = function (messageType, payload) {
         prefix: webrtc.prefix
     };
     this.logger.log('sending', messageType, message);
+    console.log('message is ===================');
+    console.log(message);
     this.parent.emit('message', message);
 };
 

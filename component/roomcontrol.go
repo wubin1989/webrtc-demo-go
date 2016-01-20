@@ -3,6 +3,7 @@ package RoomControl
 import (
 	"github.com/googollee/go-socket.io"
 	"log"
+	// "reflect"
 	"sync"
 )
 
@@ -13,7 +14,7 @@ type RoomControl struct {
 }
 
 type clientsMediaDescription struct {
-	clients struct{}
+	Clients map[string]interface{}
 }
 
 func NewRoomControl(adaptor socketio.BroadcastAdaptor) *RoomControl {
@@ -25,11 +26,17 @@ func NewRoomControl(adaptor socketio.BroadcastAdaptor) *RoomControl {
 }
 
 func (rc *RoomControl) Join(room string, socket socketio.Socket) error {
+	// log.Println("=====================================================")
+	// log.Println(room)
+	// log.Println(socket)
 	err := rc.adaptor.Join(room, socket)
 	if err == nil {
 		rc.mu.Lock()
 		rc.clientCount[room]++
 		rc.mu.Unlock()
+	}
+	if err != nil {
+		log.Fatal(err)
 	}
 	return err
 }
@@ -54,16 +61,29 @@ func (rc *RoomControl) Send(ignore socketio.Socket, room, message string, args .
 	return rc.adaptor.Send(ignore, room, message, args...)
 }
 
-func (rc *RoomControl) DescribeRoom(name string) clientsMediaDescription {
-	sResult := &clientsMediaDescription{}
-
-	rc.adaptor.GetAllClients(name)
-	if rc.adaptor[name] != nil {
-		clientsMap := rc.adaptor[name]
+func (rc *RoomControl) GetAllClients(room string) (map[string]socketio.Socket, error) {
+	rc.mu.Lock()
+	defer rc.mu.Unlock()
+	socketMap, err := rc.adaptor.GetAllClients(room)
+	if err != nil {
+		log.Fatal(err)
 	}
-	for clientId, clientSocket := range clientsMap {
-		log.Println("Id is %s", clientId)
-		sResult.clients[clientId] = clientSocket.resources
+	return socketMap, nil
+}
+
+func (rc *RoomControl) DescribeRoom(room string) clientsMediaDescription {
+	sResult := &clientsMediaDescription{
+		Clients: make(map[string]interface{}),
+	}
+	socketMap, err := rc.GetAllClients(room)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for clientId, clientSocket := range socketMap {
+		//log.Printf("Id is %s", clientId)
+		sResult.Clients[clientId] = *clientSocket.GetResources()
 	}
 	return *sResult
 }

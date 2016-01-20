@@ -14,6 +14,8 @@
 
 	var room = location.search && location.search.split('?')[1];
 
+    console.log(room);
+
 	var webrtc = new SimpleWebRTC({
         // the id/element dom element that will hold "our" video
         localVideoEl: 'localVideo',
@@ -56,6 +58,7 @@
         console.log('video added', peer);
         var remotes = document.getElementById('remotes');
         if (remotes) {
+            debugger;
             var d = document.createElement('div');
             d.className = 'videoContainer';
             d.id = 'container_' + webrtc.getDomId(peer);
@@ -97,6 +100,7 @@
     if (room) {
         // setRoom(room);
     } else {
+        console.log(123);
         //$('form').submit(function () {
             //var val = $('#sessionInput').val().toLowerCase().replace(/\s/g, '-').replace(/[^A-Za-z0-9_\-]/g, '');
             var val = 'chat';

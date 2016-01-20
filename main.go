@@ -2,8 +2,9 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/googollee/go-socket.io"
-	"github.com/satori/go.uuid"
+	//"github.com/satori/go.uuid"
 	"go-signal-server/component"
 	"log"
 	"net/http"
@@ -11,7 +12,7 @@ import (
 
 type ExtendedServer struct {
 	server *socketio.Server
-	result
+	//result
 }
 
 type handshakeDetail struct {
@@ -46,17 +47,18 @@ func main() {
 	roomCtrl := RoomControl.NewRoomControl(defaultAdaptor)
 	server.SetAdaptor(roomCtrl)
 
-	log.Printf("roomCtrl is %+v", roomCtrl)
+	// log.Printf("roomCtrl is %+v", roomCtrl)
 
 	server.On("connection", func(so socketio.Socket) {
 		log.Println("on connection")
 
 		so = so.SetResources(false, true, false)
 
-		log.Printf("%+v", so)
+		// log.Printf("%+v", so)
 
 		so.On("message", func(msg []byte) {
 
+			log.Println("msg is coming ======================================================")
 			var err error
 			var m []byte
 
@@ -106,8 +108,6 @@ func main() {
 			//     cb = name;
 			//     name = uuid();
 			// }
-			log.Println(server)
-			log.Printf("uuid is %s", uuid.NewV4())
 
 			so.Emit("room factory message back", name)
 
@@ -124,9 +124,17 @@ func main() {
 		})
 
 		so.On("join", func(name string) {
-
 			joinFeedBack := roomCtrl.DescribeRoom(name)
-			so.Emit("join feed back", joinFeedBack)
+			//log.Printf("%+v", joinFeedBack)
+			feedBackMsg, err := json.Marshal(joinFeedBack)
+			if err != nil {
+				log.Fatal(err)
+			}
+			log.Printf("%s", feedBackMsg)
+			if err != nil {
+				log.Fatal(err)
+			}
+			so.Emit("join feed back", fmt.Sprintf("%s", feedBackMsg))
 			roomCtrl.Join(name, so)
 
 		})
@@ -146,20 +154,6 @@ func main() {
 //     return io.sockets.clients(name).length;
 // }
 
-// io.sockets.on('connection', function(client) {
-//         client.resources = {
-//             screen: false,
-//             video: true,
-//             audio: false
-//         };
-
-/**
- * pass a message to another id
- * offer/answer information
- */
-
-//client.on('join', join);
-
 // function removeFeed(type) {
 //     if (client.room) {
 //         io.sockets.in(client.room).emit('remove', {
@@ -173,22 +167,6 @@ func main() {
 //     }
 // }
 
-//         function join(name, cb) {
-//             // sanity check
-//             if (typeof name !== 'string') return;
-//             // check if maximum number of clients reached
-//             if (config.rooms && config.rooms.maxClients > 0 &&
-//                 clientsInRoom(name) >= config.rooms.maxClients) {
-//                 safeCb(cb)('full');
-//                 return;
-//             }
-//             // leave any existing rooms
-//             removeFeed();
-//             safeCb(cb)(null, describeRoom(name));
-//             client.join(name);
-//             client.room = name;
-//         }
-
 //         // we don't want to pass "leave" directly because the
 //         // event type string of "socket end" gets passed too.
 //         client.on('disconnect', function() {
@@ -197,28 +175,6 @@ func main() {
 //         client.on('leave', function() {
 //             removeFeed();
 //         });
-
-//         client.on('create', function(name, cb) {
-//             console.log('socket name is %s', name);
-//             if (arguments.length == 2) {
-//                 cb = (typeof cb == 'function') ? cb : function() {};
-//                 name = name || uuid();
-//             } else {
-//                 cb = name;
-//                 name = uuid();
-//             }
-//             console.log('uuid is %s', uuid());
-//             // check if exists
-//             var room = io.nsps['/'].adapter.rooms[name];
-//             if (room && room.length) {
-//                 safeCb(cb)('taken');
-//             } else {
-//                 join(name);
-//                 safeCb(cb)(null, name);
-//             }
-//         });
-
-// };
 
 // // function safeCb(cb) {
 // //     if (typeof cb === 'function') {
