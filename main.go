@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"github.com/googollee/go-socket.io"
 	//"github.com/satori/go.uuid"
-	"go-signal-server/component"
 	"log"
 	"net/http"
+	"strconv"
+	"time"
+	"webrtc-demo-go/component"
 )
 
 type ExtendedServer struct {
@@ -16,23 +18,32 @@ type ExtendedServer struct {
 }
 
 type handshakeDetail struct {
-	from     string
-	to       string
-	sid      string
-	roomType string
-	payload
-	prefix string
+	From     string `json: "from"`
+	To       string `json: "to"`
+	Sid      string `json: "sid"`
+	RoomType string `json: "roomType"`
+	Payload  string `json: "-"`
+	// struct {
+	// 	Type string `json: "type"`
+	// 	Sdp  string `json: "sdp"`
+	// }
+	Prefix string `json: "prefix"`
+	Type   string `json: "type"`
 }
 
-type payload struct {
-	candidate
-}
+//{"to":"FBZY_JLuq6vSZH6lk2bX","sid":"1453458111055","roomType":"video","type":"offer","prefix":"webkit"}
 
-type candidate struct {
-	candidate     string
-	sdpMid        string
-	sdpMLineIndex int
-}
+// type Payload struct {
+// 	Candidate
+// }
+
+// type Candidate struct {
+// 	Type string `json: "type"`
+// 	Sdp  string `json: "sdp"`
+// 	// candidate     string
+// 	// sdpMid        string
+// 	// sdpMLineIndex int
+// }
 
 func main() {
 	eServer := &ExtendedServer{}
@@ -56,19 +67,25 @@ func main() {
 
 		// log.Printf("%+v", so)
 
-		so.On("message", func(msg []byte) {
+		so.On("message", func(msg string) {
 
-			log.Println("msg is coming ======================================================")
-			var err error
+			convertedMsg, err := strconv.Unquote(msg)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			log.Println("msg is coming ======================================================", convertedMsg)
 			var m []byte
 
 			hsDetail := &handshakeDetail{}
 
-			err = json.Unmarshal(msg, hsDetail)
+			err = json.Unmarshal([]byte(convertedMsg), hsDetail)
 
 			if err != nil {
 				log.Fatal(err)
 			}
+
+			log.Printf("%+v", hsDetail)
 
 			// {
 			// 	to: '/#PVVNhym5878Ldu0mAAAC',
@@ -83,23 +100,24 @@ func main() {
 			// 	prefix: 'webkit'
 			// }
 
-			hsDetail.from = so.Id()
+			hsDetail.From = so.Id()
 			m, err = json.Marshal(hsDetail)
 
 			if err != nil {
 				log.Fatal(err)
 			}
 
+			log.Printf("%+v", hsDetail)
 			log.Println("emit:", so.Emit("message", m))
-			server.BroadcastTo(hsDetail.to, "message", m)
+			server.BroadcastTo(hsDetail.To, "message", m)
 		})
 
 		so.On("disconnection", func() {
-			log.Println("on disconnect")
+			log.Println("on disconnect", "   ", time.Now().UnixNano()/1e6)
 		})
 
 		so.On("create", func(name string) {
-			log.Printf("socket name is %s", name)
+			// log.Printf("socket name is %s", name)
 
 			// if (arguments.length == 2) {
 			//     cb = (typeof cb == 'function') ? cb : function() {};
@@ -130,7 +148,7 @@ func main() {
 			if err != nil {
 				log.Fatal(err)
 			}
-			log.Printf("%s", feedBackMsg)
+			// log.Printf("%s", feedBackMsg)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -146,8 +164,8 @@ func main() {
 
 	http.Handle("/socket.io/", server)
 	http.Handle("/", http.FileServer(http.Dir("./asset")))
-	log.Println("Serving at localhost:8888...")
-	log.Fatal(http.ListenAndServe(":8888", nil))
+	log.Println("Serving at localhost:8447...")
+	log.Fatal(http.ListenAndServe(":8447", nil))
 }
 
 // function clientsInRoom(name) {

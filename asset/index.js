@@ -26,7 +26,7 @@
 		debug: false,
 		detectSpeakingEvents: true,
 		autoAdjustMic: false,
-        url: 'http://localhost:8888'
+        url: 'http://localhost:8447'
     });
 
     webrtc.on('readyToCall', function (socketId) {

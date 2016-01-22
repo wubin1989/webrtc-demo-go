@@ -165,10 +165,12 @@ function SimpleWebRTC(opts) {
     });
 
     this.webrtc.on('message', function (payload) {
-        console.log('hello !!!!!');
-        console.log(JSON.stringify(payload));
-        self.connection.emit('message', JSON.stringify(payload));
-        //self.connection.emit('message', payload);
+        
+
+        var copyJsonString = payload;
+        // delete copyJsonString.payload;
+        // console.log(JSON.stringify(copyJsonString));
+        self.connection.emit('message', JSON.stringify(copyJsonString));
     });
 
     this.webrtc.on('peerStreamAdded', this.handlePeerStreamAdded.bind(this));
@@ -2234,8 +2236,9 @@ Peer.prototype.send = function (messageType, payload) {
     this.logger.log('sending', messageType, message);
     console.log('message is ===================');
     console.log(message);
-    console.log(JSON.stringify(message));
-    this.parent.emit('message', JSON.stringify(message));
+    var copyJsonString = message;
+    console.log(JSON.stringify(copyJsonString));
+    this.parent.emit('message', JSON.stringify(copyJsonString));
 };
 
 // send via data channel
