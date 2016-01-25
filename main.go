@@ -18,17 +18,21 @@ type ExtendedServer struct {
 }
 
 type handshakeDetail struct {
-	From     string `json: "from"`
-	To       string `json: "to"`
-	Sid      string `json: "sid"`
-	RoomType string `json: "roomType"`
-	Payload  string `json: "-"`
-	// struct {
-	// 	Type string `json: "type"`
-	// 	Sdp  string `json: "sdp"`
-	// }
-	Prefix string `json: "prefix"`
-	Type   string `json: "type"`
+	From     string `json:"from"`
+	To       string `json:"to"`
+	Sid      string `json:"sid"`
+	RoomType string `json:"roomType"`
+	Payload  struct {
+		Type      string `json:"type"`
+		Sdp       string `json:"sdp"`
+		Candidate struct {
+			Candidate     string `json:"candidate"`
+			SdpMid        string `json:"sdpMid"`
+			SdpMLineIndex int    `json:"sdpMLineIndex"`
+		} `json:"candidate"`
+	} `json:"payload"`
+	Prefix string `json:"prefix"`
+	Type   string `json:"type"`
 }
 
 //{"to":"FBZY_JLuq6vSZH6lk2bX","sid":"1453458111055","roomType":"video","type":"offer","prefix":"webkit"}
@@ -44,6 +48,19 @@ type handshakeDetail struct {
 // 	// sdpMid        string
 // 	// sdpMLineIndex int
 // }
+
+/**
+ *
+{
+    "payload":{
+        "candidate":{
+            "candidate":"candidate:1984149417 1 udp 2122260223 192.168.14.8 53365 typ host generation 0",
+            "sdpMid":"audio",
+            "sdpMLineIndex":0
+        }
+    }
+}
+*/
 
 func main() {
 	eServer := &ExtendedServer{}
@@ -108,6 +125,7 @@ func main() {
 			}
 
 			log.Printf("%+v", hsDetail)
+			log.Printf("%s", m)
 			log.Println("emit:", so.Emit("message", m))
 			server.BroadcastTo(hsDetail.To, "message", m)
 		})
@@ -152,6 +170,8 @@ func main() {
 			if err != nil {
 				log.Fatal(err)
 			}
+			log.Println("===============================================")
+			log.Println(fmt.Sprintf("%s", feedBackMsg))
 			so.Emit("join feed back", fmt.Sprintf("%s", feedBackMsg))
 			roomCtrl.Join(name, so)
 
@@ -164,8 +184,8 @@ func main() {
 
 	http.Handle("/socket.io/", server)
 	http.Handle("/", http.FileServer(http.Dir("./asset")))
-	log.Println("Serving at localhost:8447...")
-	log.Fatal(http.ListenAndServe(":8447", nil))
+	log.Println("Serving at localhost:8451...")
+	log.Fatal(http.ListenAndServe(":8451", nil))
 }
 
 // function clientsInRoom(name) {

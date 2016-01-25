@@ -81,9 +81,10 @@ function SimpleWebRTC(opts) {
     });
 
     connection.on('message', function (message) {
-        console.log(456);
-        console.log(message);
-        var peers = self.webrtc.getPeers(message.from, message.roomType);
+        console.log(456 + '+++++++++++++++++++++++++++++++');
+        var msgObj = JSON.parse(Base64.decode(message));
+        console.log(msgObj);
+        var peers = self.webrtc.getPeers(msgObj.from, msgObj.roomType);
         var peer;
 
         if (message.type === 'offer') {
@@ -165,11 +166,9 @@ function SimpleWebRTC(opts) {
     });
 
     this.webrtc.on('message', function (payload) {
-        
-
+        console.log('payload is +++++++++++++++++++++====================++++++++++++++++++++++++');
+        console.log(payload);
         var copyJsonString = payload;
-        // delete copyJsonString.payload;
-        // console.log(JSON.stringify(copyJsonString));
         self.connection.emit('message', JSON.stringify(copyJsonString));
     });
 
@@ -350,7 +349,10 @@ SimpleWebRTC.prototype.joinRoom = function (name, cb) {
     this.connection.emit('join', name);
 
     this.connection.on('join feed back', function (roomDescription) {
+        console.log('join feed back raw message is ===========');
+        console.log(roomDescription);
         var parsedRoomDesp = JSON.parse(roomDescription)
+        console.log('join feed back message is ===========');
         console.log(parsedRoomDesp);
 
         var id,
@@ -2236,9 +2238,7 @@ Peer.prototype.send = function (messageType, payload) {
     this.logger.log('sending', messageType, message);
     console.log('message is ===================');
     console.log(message);
-    var copyJsonString = message;
-    console.log(JSON.stringify(copyJsonString));
-    this.parent.emit('message', JSON.stringify(copyJsonString));
+    this.parent.emit('message', JSON.stringify(message));
 };
 
 // send via data channel
@@ -12633,6 +12633,10 @@ Socket.prototype.onPacket = function (packet) {
     // Socket is live - any packet counts
     this.emit('heartbeat');
 
+
+    console.log('packet is    ...............+++++++++++++++');
+    console.log(packet);
+
     switch (packet.type) {
       case 'open':
         this.onHandshake(parsejson(packet.data));
@@ -12649,8 +12653,13 @@ Socket.prototype.onPacket = function (packet) {
         break;
 
       case 'message':
+      console.log('JSON.stringify(packet.data) is =====================================================');
+        console.log(packet.data);
+
+        
         this.emit('data', packet.data);
-        this.emit('message', JSON.stringify(packet.data));
+        
+        this.emit('message', packet.data);
         break;
     }
   } else {
