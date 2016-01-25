@@ -1,7 +1,7 @@
 package RoomControl
 
 import (
-	"github.com/googollee/go-socket.io"
+	"github.com/wubin1989/go-socket.io"
 	"log"
 	// "reflect"
 	"sync"

@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/googollee/go-socket.io"
+	"github.com/wubin1989/go-socket.io"
 	//"github.com/satori/go.uuid"
 	"log"
 	"net/http"
