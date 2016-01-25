@@ -26,7 +26,8 @@
 		debug: false,
 		detectSpeakingEvents: true,
 		autoAdjustMic: false,
-        url: 'http://localhost:8451'
+        //url: 'http://localhost:8451'
+        url: 'https://sandbox.simplewebrtc.com:443/',
     });
 
     webrtc.on('readyToCall', function (socketId) {
