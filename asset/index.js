@@ -26,8 +26,8 @@
 		debug: false,
 		detectSpeakingEvents: true,
 		autoAdjustMic: false,
-        //url: 'http://localhost:8451'
-        url: 'https://sandbox.simplewebrtc.com:443/',
+        url: 'http://localhost:8889'
+        //url: 'https://sandbox.simplewebrtc.com:443/',
     });
 
     webrtc.on('readyToCall', function (socketId) {
@@ -101,7 +101,6 @@
     if (room) {
         // setRoom(room);
     } else {
-        console.log(123);
         //$('form').submit(function () {
             //var val = $('#sessionInput').val().toLowerCase().replace(/\s/g, '-').replace(/[^A-Za-z0-9_\-]/g, '');
             var val = 'chat';

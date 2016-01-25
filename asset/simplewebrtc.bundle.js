@@ -87,33 +87,33 @@ function SimpleWebRTC(opts) {
         var peers = self.webrtc.getPeers(msgObj.from, msgObj.roomType);
         var peer;
 
-        if (message.type === 'offer') {
+        if (msgObj.type === 'offer') {
             if (peers.length) {
                 peers.forEach(function (p) {
-                    if (p.sid == message.sid) peer = p;
+                    if (p.sid == msgObj.sid) peer = p;
                 });
                 //if (!peer) peer = peers[0]; // fallback for old protocol versions
             }
             if (!peer) {
                 peer = self.webrtc.createPeer({
-                    id: message.from,
-                    sid: message.sid,
-                    type: message.roomType,
-                    enableDataChannels: self.config.enableDataChannels && message.roomType !== 'screen',
-                    sharemyscreen: message.roomType === 'screen' && !message.broadcaster,
-                    broadcaster: message.roomType === 'screen' && !message.broadcaster ? self.connection.getSessionid() : null
+                    id: msgObj.from,
+                    sid: msgObj.sid,
+                    type: msgObj.roomType,
+                    enableDataChannels: self.config.enableDataChannels && msgObj.roomType !== 'screen',
+                    sharemyscreen: msgObj.roomType === 'screen' && !msgObj.broadcaster,
+                    broadcaster: msgObj.roomType === 'screen' && !msgObj.broadcaster ? self.connection.getSessionid() : null
                 });
                 self.emit('createdPeer', peer);
             }
-            peer.handleMessage(message);
+            peer.handleMessage(msgObj);
         } else if (peers.length) {
             peers.forEach(function (peer) {
-                if (message.sid) {
-                    if (peer.sid === message.sid) {
-                        peer.handleMessage(message);
+                if (msgObj.sid) {
+                    if (peer.sid ===msgObj.sid) {
+                        peer.handleMessage(msgObj);
                     }
                 } else {
-                    peer.handleMessage(message);
+                    peer.handleMessage(msgObj);
                 }
             });
         }
@@ -182,9 +182,10 @@ function SimpleWebRTC(opts) {
     }
 
     connection.on('stunservers', function (args) {
+        console.log(JSON.parse(args));
         // resets/overrides the config
-        self.webrtc.config.peerConnectionConfig.iceServers = args;
-        self.emit('stunservers', args);
+        self.webrtc.config.peerConnectionConfig.iceServers = JSON.parse(args);
+        self.emit('stunservers', JSON.parse(args));
     });
     connection.on('turnservers', function (args) {
         // appends to the config
@@ -193,6 +194,8 @@ function SimpleWebRTC(opts) {
     });
 
     this.webrtc.on('iceFailed', function (peer) {
+        console.log('fail is ==============');
+        console.log(peer);
         // local ice failure
     });
     this.webrtc.on('connectivityError', function (peer) {

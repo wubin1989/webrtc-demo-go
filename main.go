@@ -104,6 +104,9 @@ func main() {
 
 			log.Printf("%+v", hsDetail)
 
+			clientsInChat, _ := roomCtrl.GetAllClients("chat")
+			toSocket := clientsInChat[hsDetail.To]
+
 			// {
 			// 	to: '/#PVVNhym5878Ldu0mAAAC',
 			// 	sid: '1452784289306',
@@ -124,10 +127,11 @@ func main() {
 				log.Fatal(err)
 			}
 
-			log.Printf("%+v", hsDetail)
-			log.Printf("%s", m)
-			log.Println("emit:", so.Emit("message", m))
-			server.BroadcastTo(hsDetail.To, "message", m)
+			// log.Printf("%+v", hsDetail)
+			// log.Printf("%s", m)
+
+			//so.Emit("message", m)
+			toSocket.Emit("message", m)
 		})
 
 		so.On("disconnection", func() {
@@ -174,8 +178,32 @@ func main() {
 			log.Println(fmt.Sprintf("%s", feedBackMsg))
 			so.Emit("join feed back", fmt.Sprintf("%s", feedBackMsg))
 			roomCtrl.Join(name, so)
-
 		})
+
+		//"stunservers": [{ "url": "stun:stun.l.google.com:19302" }]
+
+		// stunServers := `[{ "url": "stun:stun.l.google.com:19302" }]`
+		// so.Emit("stunservers", stunServers)
+
+		// create shared secret nonces for TURN authentication
+		// the process is described in draft-uberti-behave-turn-rest
+		// var credentials = [];
+		// // allow selectively vending turn credentials based on origin.
+		// var origin = client.handshake.headers.origin;
+		// if (!config.turnorigins || config.turnorigins.indexOf(origin) !== -1) {
+		//     config.turnservers.forEach(function (server) {
+		//         var hmac = crypto.createHmac('sha1', server.secret);
+		//         // default to 86400 seconds timeout unless specified
+		//         var username = Math.floor(new Date().getTime() / 1000) + (server.expiry || 86400) + "";
+		//         hmac.update(username);
+		//         credentials.push({
+		//             username: username,
+		//             credential: hmac.digest('base64'),
+		//             urls: server.urls || server.url
+		//         });
+		//     });
+		// }
+		// client.emit('turnservers', credentials);
 
 	})
 	server.On("error", func(so socketio.Socket, err error) {
@@ -184,8 +212,8 @@ func main() {
 
 	http.Handle("/socket.io/", server)
 	http.Handle("/", http.FileServer(http.Dir("./asset")))
-	log.Println("Serving at localhost:8451...")
-	log.Fatal(http.ListenAndServe(":8451", nil))
+	log.Println("Serving at localhost:8889...")
+	log.Fatal(http.ListenAndServe(":8889", nil))
 }
 
 // function clientsInRoom(name) {
